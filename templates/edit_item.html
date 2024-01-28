@@ -1,0 +1,19 @@
+
+<tr id="item-row-{{ item.name }}" hx-trigger='cancel' class='editing' hx-get="/item/{{ item.name }}" hx-swap="OuterHTML">
+        <td>{{ item.name }}</td>
+        <td><input type="text" name="description" value="{{ item.description }}"></td>
+        <td><input type="text" name="drawing" value="{{ item.drawing }}"></td>
+        <td><input type="number" name="quantity" value="{{ item.quantity }}"></td>
+        <td>
+            <select class="form-select" aria-label="Default select example" name="status" required>
+                {% set options = ["Active", "Unavailable", "Slow"] %}
+                {% for option in options %}
+                    <option value="{{ option }}" {% if option == item.status %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <button type="submit" class="btn btn-primary" hx-put="/update-item/{{ item.name }}" hx-include="closest tr">Save</button>
+            <button type="button" class="btn btn-primary" hx-get="/item/{{ item.name }}">Cancel</button>
+        </td>
+</tr>

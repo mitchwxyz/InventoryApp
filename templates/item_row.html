@@ -1,0 +1,36 @@
+
+<tr id="item-row-{{ item.name }}">
+    <td>{{ item.name }}</td>
+    <td>{{ item.description }}</td>
+    <td>{{ item.drawing }}</td>
+    <td>{{ item.quantity }}</td>
+    <td>{{ item.status }}</td>
+    <td>
+        <button type="button" class="btn btn-primary"
+                hx-get="/edit-item/{{ item.name }}"
+                hx-trigger="edit"
+                onClick="let editing = document.querySelector('.editing')
+                         if(editing) {
+                           Swal.fire({title: 'Already Editing',
+                                      showCancelButton: true,
+                                      confirmButtonText: 'Yep, Edit This Row!',
+                                      text:'Hey!  You are already editing a row!  Do you want to cancel that edit and continue?'})
+                           .then((result) => {
+                                if(result.isConfirmed) {
+                                   htmx.trigger(editing, 'cancel')
+                                }
+                                htmx.trigger(this, 'edit')
+                            })
+                         } else {
+                            htmx.trigger(this, 'edit')
+                         }">
+          Edit</button>
+        <button type="button" class="btn btn-danger" 
+                hx-delete="/delete-item/{{ item.name }}" 
+                hx-include="closest tr" 
+                hx-confirm="Are you sure you want to delete this item?">
+        Delete</button>
+
+        
+    </td>
+</tr>
