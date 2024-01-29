@@ -17,12 +17,12 @@ async def get_inventory(request: Request):
 @app.get("/item/{name}")
 async def get_item(request: Request, name: str):
     item = await fetch_item(name)
-    return templates.TemplateResponse("item_row.html", {"request": request, "item": item})
+    return templates.TemplateResponse("view_item_row.html", {"request": request, "item": item})
 
 @app.get("/edit-item/{name}")
 async def edit_item_form(request: Request, name: str):
     item = await fetch_item(name)
-    return templates.TemplateResponse("edit_item.html", {"request": request, "item": item})
+    return templates.TemplateResponse("edit_item_row.html", {"request": request, "item": item})
 
 @app.post("/add-item")
 async def create_item(name: str = Form(...), description: str = Form(...), drawing: str = Form(...), quantity: int = Form(...), status: str = Form(...)):
@@ -33,7 +33,7 @@ async def create_item(name: str = Form(...), description: str = Form(...), drawi
 async def update_item_edit(request: Request, name: str, description: str = Form(...), drawing: str = Form(...), quantity: int = Form(...), status: str = Form(...)):
     await update_item(name, description, drawing, quantity, status)
     item = await fetch_item(name)
-    return templates.TemplateResponse("item_row.html", {"request": request, "item": item})
+    return templates.TemplateResponse("view_item_row.html", {"request": request, "item": item})
 
 @app.delete("/delete-item/{name}")
 async def delete_item_edit(name: str):

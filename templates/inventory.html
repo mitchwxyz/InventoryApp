@@ -3,20 +3,18 @@
 
 <body>
     <div class="container">
-        <table class="table">
+        <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Drawing</th>
-                    <th>Quantity</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    {% for head in ["Name", "Description", "Drawing", "Quantity", "Status"] %}
+                        <th>{{ head }}</th>
+                    {% endfor %}
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody hx-target="closest tr" hx-swap="outerHTML">
                 {% for item in items %}
-                {% include "item_row.html" %}
+                    {% include "view_item_row.html" %}
                 {% endfor %}
             </tbody>
         </table>
