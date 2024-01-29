@@ -1,10 +1,10 @@
 
-<tr id="item-row-{{ item.name }}" hx-trigger='cancel' class='editing' hx-get="/app/item/{{ item.name }}">
+<tr id="item-row-{{ item._id }}" hx-trigger='cancel' class='editing' hx-get="/app/item/{{ item._id }}">
         <td>{{ item.name }}</td>
         <td><input type="text" name="description" value="{{ item.description }}"></td>
         <td><input type="text" name="drawing" value="{{ item.drawing }}"></td>
         <td><input type="number" name="quantity" value="{{ item.quantity }}"></td>
-        <td>
+        <td class="text-center">
             <select class="form-select" aria-label="Default select example" name="status" required>
                 {% set options = ["Active", "Unavailable", "Slow"] %}
                 {% for option in options %}
@@ -13,7 +13,7 @@
             </select>
         </td>
         <td>
-            <button type="submit" class="btn btn-primary" hx-put="/app/update-item/{{ item.name }}" hx-include="closest tr">Save</button>
-            <button type="button" class="btn btn-primary" hx-get="/app/item/{{ item.name }}">Cancel</button>
+            <button type="submit" class="btn btn-primary p-1 mb-1" hx-put="/app/update-item/{{ item._id }}" hx-include="closest tr">Save</button>
+            <button type="button" class="btn btn-primary p-1 mb-1" hx-get="/app/item/{{ item._id }}">Cancel</button>
         </td>
 </tr>
