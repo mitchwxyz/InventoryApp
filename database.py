@@ -13,12 +13,21 @@ inv_collection = db_client.db["Main"]
 
 
 async def fetch_all_items():
-    items = await inv_collection.find().to_list(length=100)
+    items = await inv_collection.find().to_list(length=None)
     return items
 
 async def fetch_item(item_id: str):
     item = await inv_collection.find_one({"_id": ObjectId(item_id)})
     return item
+
+async def search_items(search_term: str):
+    query = {"$or": [{"name": {"$regex": search_term, "$options": "i"}}, 
+                     {"description": {"$regex": search_term, "$options": "i"}},
+                     {"drawing": {"$regex": search_term, "$options": "i"}}
+                    ]
+            }
+    items = await inv_collection.find(query).to_list(length=None)
+    return items
 
 async def add_item(name: str, description: str, drawing: str, quantity: int, status: str):
     new_item = {

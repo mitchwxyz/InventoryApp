@@ -15,4 +15,4 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", reload=True)
+    uvicorn.run("main:app", reload=True, log_level='debug')

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, Response
 
-from database import fetch_all_items, fetch_item, add_item, update_item, delete_item
+from database import fetch_all_items, fetch_item, add_item, update_item, delete_item, search_items
 
 
 
@@ -18,12 +18,19 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/")
 async def get_inventory(request: Request):
     items = await fetch_all_items()
-    return templates.TemplateResponse("inventory.html", {"request": request, "items": items})
+    return templates.TemplateResponse("base.html", {"request": request, "items": items})
 
 @router.get("/item/{item_id}")
 async def get_item(request: Request, item_id: str):
     item = await fetch_item(item_id)
     return templates.TemplateResponse("view_item_row.html", {"request": request, "item": item})
+
+@router.post("/search")
+async def search_name(request: Request, search: str = Form(None)):
+    if search:
+        items = await search_items(search)
+    else: items = await fetch_all_items()
+    return templates.TemplateResponse("inventory.html", {"request": request, "items": items})
 
 @router.get("/edit-item/{item_id}")
 async def edit_item_form(request: Request, item_id: str):
