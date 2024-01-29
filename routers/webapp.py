@@ -9,9 +9,11 @@ from database import fetch_all_items, fetch_item, add_item, update_item, delete_
 router = APIRouter(
     prefix="/app",
     tags=["App"],
+    include_in_schema=False,
 )
 
 templates = Jinja2Templates(directory="templates")
+
 
 @router.get("/")
 async def get_inventory(request: Request):
