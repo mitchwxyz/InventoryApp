@@ -13,7 +13,7 @@
             </select>
         </td>
         <td>
-            <button type="submit" class="btn btn-primary" hx-put="/update-item/{{ item.name }} hx-include">Save</button>
+            <button type="submit" class="btn btn-primary" hx-put="/update-item/{{ item.name }}" hx-include="closest tr">Save</button>
             <button type="button" class="btn btn-primary" hx-get="/item/{{ item.name }}">Cancel</button>
         </td>
 </tr>
