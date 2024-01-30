@@ -38,7 +38,7 @@ async def get_inventory(request: Request, page: int = 1):
 
 
 @router.get("/items")
-async def more_inventory(request: Request, page: int, search: str | None):
+async def more_inventory(request: Request, page: int, search: str):
     """
     Fetch a page of inventory items with an optional search query and render it using the 'more_rows.html' template.
 
@@ -50,15 +50,16 @@ async def more_inventory(request: Request, page: int, search: str | None):
     Returns:
         TemplateResponse: A template response with a list of items matching the search query and pagination details.
     """
-    if search:
-        items = await search_items(search, page, ITEMS_PER_PAGE)
+    clean_search = "" if search == "None" else search
+    if clean_search:
+        items = await search_items(clean_search, page, ITEMS_PER_PAGE)
     else:
         items = await fetch_inventory_page(page, ITEMS_PER_PAGE)
     return templates.TemplateResponse("more_rows.html", {"request": request,
                                                          "item_schema": item_schema,
                                                          "items": items,
                                                          "current_page":page,
-                                                         "search": search})
+                                                         "search": clean_search})
 
 
 @router.get("/item/{item_id}")
