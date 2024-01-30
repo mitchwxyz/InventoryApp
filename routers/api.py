@@ -1,13 +1,18 @@
 from fastapi import APIRouter, HTTPException, status
 
 from models import Item
-from database import fetch_item, insert_multiple_items
+from database import fetch_item, insert_multiple_items, get_all_items
 
 
 router = APIRouter(
   prefix="/api",
   tags=["API"],
   )
+
+@router.get("/items", response_model=list[Item])
+async def get_all():
+    items = await get_all_items()
+    return items
 
 @router.get("/item/{name}", response_model=Item)
 async def api_get_item(name: str):

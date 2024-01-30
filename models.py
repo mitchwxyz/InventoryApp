@@ -7,3 +7,9 @@ class Item(BaseModel):
     drawing: str
     quantity: int
     status: str
+
+class UpdateItem(BaseModel):
+    description: str
+    drawing: str
+    quantity: int
+    status: str

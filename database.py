@@ -3,7 +3,7 @@ from os import getenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
 
-from models import Item
+from models import Item, UpdateItem
 
 
 load_dotenv()
@@ -12,6 +12,12 @@ mongo_connection = getenv("MONGO_CONNECT")
 db_client = AsyncIOMotorClient(mongo_connection)
 db = "Inventory"
 inv_collection = db_client.db["Main"]
+
+
+async def get_all_items():
+    items = await inv_collection.find({}).to_list(length=None)
+    return items
+
 
 async def fetch_inventory_page(page: int, items_per_page: int):
     skip = (page - 1) * items_per_page
@@ -32,19 +38,12 @@ async def search_items(search_term: str, page, items_per_page:int):
     items = await inv_collection.find(query).skip(skip).limit(items_per_page).to_list(items_per_page)
     return items
 
-async def add_item(name: str, description: str, drawing: str, quantity: int, status: str):
-    new_item = {
-        "name": name,
-        "description": description,
-        "drawing": drawing,
-        "quantity": quantity,
-        "status": status
-    }
-    result = await inv_collection.insert_one(new_item)
+async def add_item(item: Item):
+    result = await inv_collection.insert_one(item.model_dump())
     return result.inserted_id
 
-async def update_item(item_id:str, description: str, drawing: str, quantity: int, status: str):
-    await inv_collection.update_one({"_id": ObjectId(item_id)}, {"$set": {"description": description, "drawing": drawing, "quantity": quantity, "status": status}})
+async def update_item(item_id:str, up_item: UpdateItem):
+    await inv_collection.update_one({"_id": ObjectId(item_id)}, {"$set": up_item.model_dump()})
     return True
 
 async def delete_item(item_id:str):

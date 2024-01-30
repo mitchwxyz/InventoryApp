@@ -1,11 +1,11 @@
 
 <tr id="item-row-{{ item._id }}" hx-trigger='cancel' class='editing' hx-get="/app/item/{{ item._id }}">
         <td>{{ item.name }}</td>
-        <td><input type="text" name="description" value="{{ item.description }}"></td>
-        <td><input type="text" name="drawing" value="{{ item.drawing }}"></td>
-        <td><input type="number" name="quantity" value="{{ item.quantity }}"></td>
+        <td><input type="text" name="description_in" value="{{ item.description }}"></td>
+        <td><input type="text" name="drawing_in" value="{{ item.drawing }}"></td>
+        <td><input type="number" name="quantity_in" value="{{ item.quantity }}"></td>
         <td class="text-center">
-            <select class="form-select" aria-label="Default select example" name="status" required>
+            <select class="form-select" aria-label="Default select example" name="status_in" required>
                 {% set options = ["Active", "Unavailable", "Slow"] %}
                 {% for option in options %}
                     <option value="{{ option }}" {% if option == item.status %}selected{% endif %}>{{ option }}</option>
