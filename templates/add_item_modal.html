@@ -8,30 +8,23 @@
             </div>
             <div class="modal-body">
                 <form id="newItemForm" method="post" action="/app/add-item">
+                    {% for key, props in input_types.items() %}
+                    {% if props["type"] == "select" %}
                     <div class="mb-3">
-                        <label for="itemName" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="itemName" name="name_in" required>
+                        <label for="item{{ key }}" class="form-label">{{ key }}</label>
+                        <select class="form-select" name="{{ key }}_in" required>
+                            {% for opt in props["options"] %}
+                            <option value="{{ opt }}">{{ opt }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
+                    {% else %}
                     <div class="mb-3">
-                        <label for="itemDescription" class="form-label">Description</label>
-                        <input type="text" class="form-control" id="itemDescription" name="description_in" required>
+                        <label for="item{{ key }}" class="form-label">{{ key.capitalize() }}</label>
+                        <input type="{{ props.type }}" class="form-control" id="item{{ key }}" name="{{ key}}_in" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="itemDrawing" class="form-label">Drawing</label>
-                        <input type="text" class="form-control" id="itemDrawing" name="drawing_in" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="itemQuantity" class="form-label">Quantity</label>
-                        <input type="number" class="form-control" id="itemQuantity" name="quantity_in" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="itemStatus" class="form-label">Status</label>
-                        <select class="form-select" aria-label="Default select example" name="status_in" required>
-                            <option value="Active">Active</option>
-                            <option value="Unavailable">Unavailable</option>
-                            <option value="Slow">Slow</option>
-                          </select>
-                    </div>
+                    {% endif %}
+                    {% endfor %}
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-primary">Add Item</button>
                     </div>

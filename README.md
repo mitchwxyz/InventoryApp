@@ -9,3 +9,4 @@ A Basic CRUD App built using FastAPI, htmx, and MongoDB.
 
 ## To Do
 - Users
+- Multiple Lists with Different Fields
