@@ -10,6 +10,12 @@
     <tbody hx-target="closest tr" hx-swap="outerHTML">
         {% for item in items %}
             {% include "view_item_row.html" %}
+            {% if loop.last %}
+                <tr id="load-more-row" hx-get="/app/items/?page={{ current_page + 1 }}&search={{ search }}"
+                hx-trigger="intersect delay:500ms"
+                hx-target="closest tr"
+                hx-swap="outerHTML">
+            {% endif %}
         {% endfor %}
     </tbody>
 </table>
