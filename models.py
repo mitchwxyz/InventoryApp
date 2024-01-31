@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class Item(BaseModel):
@@ -11,12 +12,16 @@ class Item(BaseModel):
         drawing (str): A reference or identifier for a drawing related to the item.
         quantity (int): The quantity of the item in stock.
         status (str): The current status of the item (e.g., available, out of stock).
+        update_date (datetime): set at time of DB transaction
+        update_by (UserID): tbd
     """
     name: str
     description: str
     drawing: str
     quantity: int
     status: str
+    update_date: datetime | None = None
+    update_by: str| None = None
 
 
 class UpdateItem(BaseModel):
@@ -28,7 +33,8 @@ class UpdateItem(BaseModel):
     drawing: str
     quantity: int
     status: str
-
+    update_date: datetime | None = None
+    update_by: str | None = None
 
 
 Input_Types = {

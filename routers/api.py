@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
+from datetime import datetime
 
 from models import Item
 from database import fetch_item, insert_multiple_items, get_all_items
@@ -56,7 +57,14 @@ async def create_multiple_items(items: list[Item]):
     Raises:
         HTTPException: 400 error if there is an error inserting the items.
     """
-    result = await insert_multiple_items(items)
+    new_items = []
+    update_fields = {"update_date": datetime.now(),
+                     "update_by": "API-User",
+                    }
+    for item in items:
+        new_item = item.model_copy(update=update_fields)
+        new_items.append(new_item)
+    result = await insert_multiple_items(new_items)
     if result:
         return {"message": "Items added successfully", "item_ids": result}
     raise HTTPException(status_code=400, detail="Error inserting items")

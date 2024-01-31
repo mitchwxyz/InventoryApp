@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, Response
+from datetime import datetime
 
 from database import fetch_inventory_page, fetch_item, add_item, update_item, delete_item, search_items
 from models import Item, UpdateItem, Input_Types
@@ -144,6 +145,8 @@ async def create_item(name_in: str = Form(...),
                 drawing=drawing_in,
                 quantity=quantity_in,
                 status=status_in,
+                update_date=datetime.now(),
+                update_by="Web-User"
                 )
     await add_item(new_item)
     return RedirectResponse(url="/", status_code=303)
@@ -173,6 +176,8 @@ async def update_item_edit(request: Request, item_id: str,
                          drawing=drawing_in,
                          quantity=quantity_in,
                          status=status_in,
+                         update_date=datetime.now(),
+                         update_by="Web-User"
                          )
     await update_item(item_id, up_item)
     item = await fetch_item(item_id)
