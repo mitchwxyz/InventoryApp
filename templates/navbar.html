@@ -6,6 +6,11 @@
                 hx-post="/app/search" hx-trigger="input changed delay:500ms, search" hx-target="#inventory-table"
                 hx-indicator=".htmx-indicator">
         </div>
+        <form id="InsertDemo" method="post" action="/demo/insert">
+            <button type="submit" class="btn btn-secondary">
+                Insert Demo Data
+            </button>>
+        </form>
         <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#addNewItemModal">
             Add New Item
         </button>

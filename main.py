@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from routers import api, webapp
+from routers import api, webapp, demo
 
 
 app = FastAPI()
 
 app.include_router(api.router)
 app.include_router(webapp.router)
+app.include_router(demo.router)
 
 @app.get("/")
 async def root():

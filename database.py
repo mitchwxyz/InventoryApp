@@ -11,10 +11,9 @@ mongo_connection = getenv("MONGO_CONNECT")
 
 db_client = AsyncIOMotorClient(mongo_connection)
 inv_collection = db_client.InventoryApp["Item"]
-user_collection = db_client.Admin["Users"]
 
 
-async def get_all_items():
+async def get_all_items(user_id: str):
     """
     Retrieve all items from the inventory collection.
 
@@ -24,11 +23,11 @@ async def get_all_items():
     Returns:
         list: A list of dictionaries, where each dictionary represents an item from the inventory.
     """
-    items = await inv_collection.find({}).to_list(length=None)
+    items = await inv_collection.find({"user_id": user_id}).to_list(length=None)
     return items
 
 
-async def fetch_inventory_page(page: int, items_per_page: int):
+async def fetch_inventory_page(page: int, items_per_page: int, user_id: str):
     """
     Fetch a specific page of items from the inventory collection.
 
@@ -43,7 +42,7 @@ async def fetch_inventory_page(page: int, items_per_page: int):
         list: A list of dictionaries, each representing an item for the specified page.
     """
     skip = (page - 1) * items_per_page
-    items = await inv_collection.find().skip(skip).limit(items_per_page).to_list(items_per_page)
+    items = await inv_collection.find({"user_id": user_id}).skip(skip).limit(items_per_page).to_list(items_per_page)
     return items
 
 
@@ -61,7 +60,7 @@ async def fetch_item(item_id: str):
     return item
 
 
-async def search_items(search_term: str, page, items_per_page:int):
+async def search_items(search_term: str, page, items_per_page:int, user_id: str):
     """
     Search for items in the inventory collection matching a search term.
 
@@ -76,11 +75,13 @@ async def search_items(search_term: str, page, items_per_page:int):
     Returns:
         list: A list of dictionaries, each representing an item that matches the search term.
     """
-    query = {"$or": [{"name": {"$regex": search_term, "$options": "i"}}, 
+    query = {"$and": [
+                    {"$or": [{"name": {"$regex": search_term, "$options": "i"}}, 
                      {"description": {"$regex": search_term, "$options": "i"}},
                      {"drawing": {"$regex": search_term, "$options": "i"}}
-                    ]
-            }
+                    ]},
+                    {"user_id": user_id}
+                    ]}   
     skip = (page - 1) * items_per_page
     items = await inv_collection.find(query).skip(skip).limit(items_per_page).to_list(items_per_page)
     return items
@@ -142,3 +143,7 @@ async def insert_multiple_items(items: list[Item]):
     items_dicts = [item.model_dump() for item in items]
     result = await inv_collection.insert_many(items_dicts)
     return [str(id) for id in result.inserted_ids]
+
+
+async def cleanup_old_records(age):
+    await inv_collection.delete_many({"update_date": {"$lt": age}})

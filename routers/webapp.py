@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Request, Form
+from datetime import datetime
+
+from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, Response
-from datetime import datetime
 
 from database import fetch_inventory_page, fetch_item, add_item, update_item, delete_item, search_items
 from models import Item, UpdateItem, Input_Types
+from utils.user_cookies import get_user, set_user
+
 
 router = APIRouter(
     prefix="/app",
@@ -19,7 +22,7 @@ ITEMS_PER_PAGE = 30
 
 
 @router.get("/")
-async def get_inventory(request: Request, page: int = 1):
+async def get_inventory(request: Request, page: int = 1, user_id: str = Depends(get_user)):
     """
     Fetch a page of inventory items and render it using the 'base.html' template.
 
@@ -30,16 +33,19 @@ async def get_inventory(request: Request, page: int = 1):
     Returns:
         TemplateResponse: A template response with the current page of inventory items.
     """
-    items = await fetch_inventory_page(page, ITEMS_PER_PAGE)
-    return templates.TemplateResponse("base.html", {"request": request,
+    items = await fetch_inventory_page(page, ITEMS_PER_PAGE, user_id)
+    response = templates.TemplateResponse("base.html", {"request": request,
                                                     "item_schema": item_schema,
                                                     "input_types": Input_Types,
                                                     "items": items,
-                                                    "current_page": 1,})
+                                                    "current_page": 1,
+                                                    })
+    await set_user(response, user_id)
+    return response
 
 
 @router.get("/items")
-async def more_inventory(request: Request, page: int, search: str):
+async def more_inventory(request: Request, page: int, search: str, user_id: str = Depends(get_user)):
     """
     Fetch a page of inventory items with an optional search query and render it using the 'more_rows.html' template.
 
@@ -53,18 +59,20 @@ async def more_inventory(request: Request, page: int, search: str):
     """
     clean_search = "" if search == "None" else search
     if clean_search:
-        items = await search_items(clean_search, page, ITEMS_PER_PAGE)
+        items = await search_items(clean_search, page, ITEMS_PER_PAGE, user_id)
     else:
-        items = await fetch_inventory_page(page, ITEMS_PER_PAGE)
-    return templates.TemplateResponse("more_rows.html", {"request": request,
+        items = await fetch_inventory_page(page, ITEMS_PER_PAGE, user_id)
+        response = templates.TemplateResponse("more_rows.html", {"request": request,
                                                          "item_schema": item_schema,
                                                          "items": items,
                                                          "current_page":page,
                                                          "search": clean_search})
+        await set_user(response, user_id)
+    return response
 
 
 @router.get("/item/{item_id}")
-async def get_item(request: Request, item_id: str):
+async def get_item(request: Request, item_id: str, user_id: str = Depends(get_user)):
     """
     Fetch a single item by its ID and render it using the 'view_item_row.html' template.
 
@@ -76,13 +84,15 @@ async def get_item(request: Request, item_id: str):
         TemplateResponse: A template response with details of the requested item.
     """
     item = await fetch_item(item_id)
-    return templates.TemplateResponse("view_item_row.html", {"request": request,
+    response = templates.TemplateResponse("view_item_row.html", {"request": request,
                                                             "item_schema": item_schema,
                                                              "item": item})
+    await set_user(response, user_id)
+    return response
 
 
 @router.post("/search")
-async def search_name(request: Request, search: str = Form(None)):
+async def search_name(request: Request, search: str = Form(None), user_id: str = Depends(get_user)):
     """
     Perform a search operation on inventory items and render the results using the 'inventory.html' template.
 
@@ -94,17 +104,19 @@ async def search_name(request: Request, search: str = Form(None)):
         TemplateResponse: A template response with the search results.
     """
     if search:
-        items = await search_items(search, 1, ITEMS_PER_PAGE)
-    else: items = await fetch_inventory_page(1, ITEMS_PER_PAGE)
-    return templates.TemplateResponse("inventory.html", {"request": request,
+        items = await search_items(search, 1, ITEMS_PER_PAGE, user_id)
+    else: items = await fetch_inventory_page(1, ITEMS_PER_PAGE, user_id)
+    response = templates.TemplateResponse("inventory.html", {"request": request,
                                                          "item_schema": item_schema,
                                                          "items": items,
                                                          "current_page": 1,
                                                          "search": search})
+    await set_user(response, user_id)
+    return response
 
 
 @router.get("/edit-item/{item_id}")
-async def edit_item_form(request: Request, item_id: str):
+async def edit_item_form(request: Request, item_id: str, user_id: str = Depends(get_user)):
     """
     Fetch a single item by its ID for editing and render it using the 'edit_item_row.html' template.
 
@@ -116,9 +128,11 @@ async def edit_item_form(request: Request, item_id: str):
         TemplateResponse: A template response with the details of the item to be edited.
     """
     item = await fetch_item(item_id)
-    return templates.TemplateResponse("edit_item_row.html", {"request": request,
+    response = templates.TemplateResponse("edit_item_row.html", {"request": request,
                                                              "input_types": Input_Types,
                                                              "item": item})
+    await set_user(response, user_id)
+    return response
 
 
 @router.post("/add-item")
@@ -126,7 +140,8 @@ async def create_item(name_in: str = Form(...),
                       description_in: str = Form(...), 
                       drawing_in: str = Form(...), 
                       quantity_in: int = Form(...), 
-                      status_in: str = Form(...)):
+                      status_in: str = Form(...),
+                      user_id: str = Depends(get_user)):
     """
     Create a new item in the inventory.
 
@@ -145,11 +160,13 @@ async def create_item(name_in: str = Form(...),
                 drawing=drawing_in,
                 quantity=quantity_in,
                 status=status_in,
+                user_id=user_id,
                 update_date=datetime.now(),
-                update_by="Web-User"
                 )
     await add_item(new_item)
-    return RedirectResponse(url="/", status_code=303)
+    response = RedirectResponse(url="/", status_code=303)
+    await set_user(response, user_id)
+    return response
 
 
 @router.put("/update-item/{item_id}")
@@ -157,7 +174,8 @@ async def update_item_edit(request: Request, item_id: str,
                            description_in: str = Form(...), 
                            drawing_in: str = Form(...), 
                            quantity_in: int = Form(...), 
-                           status_in: str = Form(...)):
+                           status_in: str = Form(...),
+                           user_id: str = Depends(get_user)):
     """
     Update an existing item in the inventory.
 
@@ -176,18 +194,20 @@ async def update_item_edit(request: Request, item_id: str,
                          drawing=drawing_in,
                          quantity=quantity_in,
                          status=status_in,
+                         user_id=user_id,
                          update_date=datetime.now(),
-                         update_by="Web-User"
                          )
     await update_item(item_id, up_item)
     item = await fetch_item(item_id)
-    return templates.TemplateResponse("view_item_row.html", {"request": request, 
+    response = templates.TemplateResponse("view_item_row.html", {"request": request, 
                                                              "item_schema": item_schema,
                                                              "item": item})
+    await set_user(response, user_id)
+    return response
 
 
 @router.delete("/delete-item/{item_id}")
-async def delete_item_edit(item_id: str):
+async def delete_item_edit(item_id: str, user_id: str = Depends(get_user)):
     """
     Delete an item from the inventory.
 
@@ -198,4 +218,6 @@ async def delete_item_edit(item_id: str):
         Response: An empty response indicating successful deletion.
     """
     await delete_item(item_id)
-    return Response()
+    response = Response()
+    await set_user(response, user_id)
+    return response

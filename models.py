@@ -20,8 +20,8 @@ class Item(BaseModel):
     drawing: str
     quantity: int
     status: str
+    user_id: str | None = None
     update_date: datetime | None = None
-    update_by: str| None = None
 
 
 class UpdateItem(BaseModel):
@@ -33,8 +33,8 @@ class UpdateItem(BaseModel):
     drawing: str
     quantity: int
     status: str
+    user_id: str | None = None
     update_date: datetime | None = None
-    update_by: str | None = None
 
 
 Input_Types = {

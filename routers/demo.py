@@ -1,7 +1,13 @@
-import httpx
+from datetime import datetime
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.responses import RedirectResponse
+
+from models import Item
+from database import insert_multiple_items
+from utils.user_cookies import get_user, set_user
 
 
-item_insert = [
+item_list = [
   {
     "name": "Cube",
     "description": "A 6 sided shape",
@@ -257,5 +263,27 @@ item_insert = [
 ]
 
 
-response = httpx.post("http://localhost:8000/api/insert/", json=item_insert)
-print(response.text)
+router = APIRouter(
+  prefix="/demo",
+  tags=["Demo"],
+  )
+
+
+@router.post("/insert/")
+async def create_multiple_items(user_id: str = Depends(get_user)):
+    """
+    Insert multiple demo items into the database.
+    """
+    new_items = []
+    update_fields = {"update_date": datetime.now(),
+                     "user_id": user_id,
+                    }
+    for item in item_list:
+        mod_item = Item(**item)
+        new_item = mod_item.model_copy(update=update_fields)
+        new_items.append(new_item)
+    await insert_multiple_items(new_items)
+    
+    response = RedirectResponse(url="/", status_code=303)
+    await set_user(response, user_id)
+    return response

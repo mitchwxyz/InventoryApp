@@ -1,8 +1,8 @@
+from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, status
-from datetime import datetime
 
 from models import Item
-from database import fetch_item, insert_multiple_items, get_all_items
+from database import fetch_item, insert_multiple_items, get_all_items, cleanup_old_records
 
 
 router = APIRouter(
@@ -12,19 +12,19 @@ router = APIRouter(
 
 
 @router.get("/items", response_model=list[Item])
-async def get_all():
+async def get_all(user_id: str):
     """
     Retrieve a list of all items in the database.
 
     Returns:
         list[Item]: A list of items, each item is an instance of the Item model.
     """
-    items = await get_all_items()
+    items = await get_all_items(user_id)
     return items
 
 
-@router.get("/item/{name}", response_model=Item)
-async def api_get_item(name: str):
+@router.get("/item/{item_id}", response_model=Item)
+async def api_get_item(item_id: str):
     """
     Retrieve a single item by its name.
 
@@ -37,14 +37,14 @@ async def api_get_item(name: str):
     Raises:
         HTTPException: 404 error if the item is not found in the database.
     """
-    item = await fetch_item(name)
+    item = await fetch_item(item_id)
     if item:
         return item
     raise HTTPException(status_code=404, detail="item not found")
 
 
 @router.post("/insert/", status_code=status.HTTP_201_CREATED)
-async def create_multiple_items(items: list[Item]):
+async def create_multiple_items(items: list[Item], user_id: str):
     """
     Insert multiple items into the database.
 
@@ -59,7 +59,7 @@ async def create_multiple_items(items: list[Item]):
     """
     new_items = []
     update_fields = {"update_date": datetime.now(),
-                     "update_by": "API-User",
+                     "user_id": user_id,
                     }
     for item in items:
         new_item = item.model_copy(update=update_fields)
@@ -68,3 +68,9 @@ async def create_multiple_items(items: list[Item]):
     if result:
         return {"message": "Items added successfully", "item_ids": result}
     raise HTTPException(status_code=400, detail="Error inserting items")
+
+@router.post("/cleanup")
+async def cleanup_old():
+    two_weeks = datetime.now() - timedelta(weeks=2)
+    await cleanup_old_records(two_weeks)
+    return {"message": "Old Item removed"}
