@@ -6,7 +6,7 @@ Create, Delete, and Edit Records from the database
 
 ### UI Features (htmx)
 - Active Search
-- Infite Scroll
+- Infinite Scroll
 
 ### To Do
 - Users
