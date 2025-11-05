@@ -1,0 +1,13 @@
+[project]
+name = "inventoryapp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.121.0",
+    "httpx>=0.28.1",
+    "jinja2>=3.1.6",
+    "motor>=3.7.1",
+    "python-multipart>=0.0.20",
+]
